@@ -1024,6 +1024,7 @@ type AllocsGetRequest struct {
 type AllocRestartRequest struct {
 	AllocID  string
 	TaskName string
+	AllTasks bool
 
 	QueryOptions
 }

@@ -126,6 +126,16 @@ func (a *Allocations) Restart(alloc *Allocation, taskName string, q *QueryOption
 	return err
 }
 
+func (a *Allocations) RestartAllTasks(alloc *Allocation, q *QueryOptions) error {
+	req := AllocationRestartRequest{
+		AllTasks: true,
+	}
+
+	var resp struct{}
+	_, err := a.client.putQuery("/v1/client/allocation/"+alloc.ID+"/restart", &req, &resp, q)
+	return err
+}
+
 func (a *Allocations) Stop(alloc *Allocation, q *QueryOptions) (*AllocStopResponse, error) {
 	var resp AllocStopResponse
 	_, err := a.client.putQuery("/v1/allocation/"+alloc.ID+"/stop", nil, &resp, q)
@@ -407,6 +417,7 @@ func (a Allocation) RescheduleInfo(t time.Time) (int, int) {
 
 type AllocationRestartRequest struct {
 	TaskName string
+	AllTasks bool
 }
 
 type AllocSignalRequest struct {
