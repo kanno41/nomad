@@ -358,10 +358,9 @@ func TestTaskRunner_Restore_Dead(t *testing.T) {
 	alloc.Job.TaskGroups[0].Count = 1
 	task := alloc.Job.TaskGroups[0].Tasks[0]
 	// use raw_exec because mock_driver restore doesn't behave as expected.
-	task.Driver = "raw_exec"
+	task.Driver = "mock_driver"
 	task.Config = map[string]interface{}{
-		"command": "sleep",
-		"args":    []string{"2"},
+		"run_for": "2ms",
 	}
 	conf, cleanup := testTaskRunnerConfig(t, alloc, task.Name)
 	conf.StateDB = cstate.NewMemDB(conf.Logger) // "persist" state between task runners

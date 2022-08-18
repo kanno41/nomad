@@ -507,21 +507,38 @@ func (tr *TaskRunner) MarkFailedDead(reason string) {
 	}
 }
 
+func (tr *TaskRunner) setRunLoopState(state string) {
+	tr.stateLock.Lock()
+	defer tr.stateLock.Unlock()
+
+	tr.localState.RunLoopState = state
+	if err := tr.stateDB.PutTaskRunnerLocalState(tr.allocID, tr.taskName, tr.localState); err != nil {
+		//TODO Nomad will be unable to restore this task; try to kill
+		//     it now and fail? In general we prefer to leave running
+		//     tasks running even if the agent encounters an error.
+		tr.logger.Warn("error persisting local failed task state; may be unable to restore after a Nomad restart",
+			"error", err)
+	}
+}
+
 // Run the TaskRunner. Starts the user's task or reattaches to a restored task.
 // Run closes WaitCh when it exits. Should be started in a goroutine.
 func (tr *TaskRunner) Run() {
-	defer close(tr.waitCh)
+	defer func() {
+		tr.setRunLoopState("done")
+		close(tr.waitCh)
+	}()
 	var result *drivers.ExitResult
 
 	tr.stateLock.RLock()
-	restoredDead := tr.state.State == structs.TaskStateDead
+	runLoopState := tr.localState.RunLoopState
 	tr.stateLock.RUnlock()
 
 	// If restoring a dead task, ensure that task is cleared and all post hooks
 	// are called without additional state updates.
 	// If the alloc is not terminal we must proceed until the ALLOC_RESTART
 	// loop to allow the task to run again in case the alloc is restarted.
-	if restoredDead && tr.Alloc().TerminalStatus() {
+	if runLoopState == "done" || runLoopState == "main_done" {
 		// do cleanup functions without emitting any additional events/work
 		// to handle cases where we restored a dead task where client terminated
 		// after task finished before completing post-run actions.
@@ -530,7 +547,9 @@ func (tr *TaskRunner) Run() {
 		if err := tr.stop(); err != nil {
 			tr.logger.Error("stop failed on terminal task", "error", err)
 		}
-		return
+		if runLoopState == "done" {
+			return
+		}
 	}
 
 	// Updates are handled asynchronously with the other hooks but each
@@ -560,10 +579,9 @@ func (tr *TaskRunner) Run() {
 
 MAIN:
 	for !tr.shouldShutdown() {
-		if restoredDead {
+		if runLoopState == "main_done" {
 			// Break early when restoring a dead task and reset the flag so the
 			// loop runs again if the task is restarted.
-			restoredDead = false
 			break
 		}
 
@@ -666,6 +684,8 @@ MAIN:
 			return
 		}
 	}
+
+	tr.setRunLoopState("main_done")
 
 	// Ensure handle is cleaned up. Restore could have recovered a task
 	// that should be terminal, so if the handle still exists we should

@@ -16,6 +16,8 @@ type LocalState struct {
 
 	// TaskHandle is the handle used to reattach to the task during recovery
 	TaskHandle *drivers.TaskHandle
+
+	RunLoopState string
 }
 
 func NewLocalState() *LocalState {
