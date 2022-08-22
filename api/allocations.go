@@ -116,6 +116,9 @@ func (a *Allocations) GC(alloc *Allocation, q *QueryOptions) error {
 	return err
 }
 
+// Restart restarts the tasks that are currently running or a specific task if
+// taskName is provided. An error is returned if the task to be restarted is
+// not running.
 func (a *Allocations) Restart(alloc *Allocation, taskName string, q *QueryOptions) error {
 	req := AllocationRestartRequest{
 		TaskName: taskName,
@@ -126,6 +129,8 @@ func (a *Allocations) Restart(alloc *Allocation, taskName string, q *QueryOption
 	return err
 }
 
+// RestartAllTasks restarts all tasks in the allocation, regardless of
+// lifecycle type or state. Tasks will restart following their lifecycle order.
 func (a *Allocations) RestartAllTasks(alloc *Allocation, q *QueryOptions) error {
 	req := AllocationRestartRequest{
 		AllTasks: true,
