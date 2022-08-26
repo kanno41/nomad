@@ -68,9 +68,9 @@ func (c *OperatorRootKeyringCommand) Run(args []string) int {
 	return cli.RunResultHelp
 }
 
-// renderSecureVariablesKeysResponse is a helper for formatting the
+// renderVariablesKeysResponse is a helper for formatting the
 // keyring API responses
-func renderSecureVariablesKeysResponse(keys []*api.RootKeyMeta, verbose bool) string {
+func renderVariablesKeysResponse(keys []*api.RootKeyMeta, verbose bool) string {
 	length := fullId
 	if !verbose {
 		length = 8

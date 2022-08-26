@@ -158,7 +158,7 @@ func formatQuotaLimits(spec *api.QuotaSpec, usages map[string]*api.QuotaUsage) s
 	sort.Sort(api.QuotaLimitSort(spec.Limits))
 
 	limits := make([]string, len(spec.Limits)+1)
-	limits[0] = "Region|CPU Usage|Memory Usage|Memory Max Usage|Network Usage|Secure Variables Usage"
+	limits[0] = "Region|CPU Usage|Memory Usage|Memory Max Usage|Network Usage|Variables Usage"
 	i := 0
 	for _, specLimit := range spec.Limits {
 		i++

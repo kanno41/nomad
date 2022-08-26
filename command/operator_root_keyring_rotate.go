@@ -91,6 +91,6 @@ func (c *OperatorRootKeyringRotateCommand) Run(args []string) int {
 		c.Ui.Error(fmt.Sprintf("error: %s", err))
 		return 1
 	}
-	c.Ui.Output(renderSecureVariablesKeysResponse([]*api.RootKeyMeta{resp}, verbose))
+	c.Ui.Output(renderVariablesKeysResponse([]*api.RootKeyMeta{resp}, verbose))
 	return 0
 }

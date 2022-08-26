@@ -83,6 +83,6 @@ func (c *OperatorRootKeyringListCommand) Run(args []string) int {
 		c.Ui.Error(fmt.Sprintf("error: %s", err))
 		return 1
 	}
-	c.Ui.Output(renderSecureVariablesKeysResponse(resp, verbose))
+	c.Ui.Output(renderVariablesKeysResponse(resp, verbose))
 	return 0
 }
